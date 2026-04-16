@@ -1,0 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Helvetica Neue", Arial, sans-serif;
+  --color-bg-dark: #0f0f0f;
+  --color-accent-orange: #c87a55; /* Copper/Bronze color from logo */
+  --color-surface: #1a1a1a;
+  --color-text-main: #ffffff;
+  --color-text-muted: #a0a0a0;
+  --color-border: #2a2a2a;
+}
+
+body {
+  background-color: var(--color-bg-dark);
+  color: var(--color-text-main);
+}
+
