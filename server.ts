@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import path from 'path';
+import nodemailer from 'nodemailer';
 
 // --- Mongoose Schemas ---
 const ProjectSchema = new mongoose.Schema({
@@ -187,6 +188,15 @@ async function startServer() {
 
   // --- API Routes ---
   
+  // Configure Nodemailer transporter
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
   app.get('/api/projects', async (req, res) => {
     const projects = await Project.find();
     res.json(projects);
@@ -206,6 +216,33 @@ async function startServer() {
     try {
       const contact = new Contact(req.body);
       await contact.save();
+
+      // Send email notification
+      if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+        try {
+          await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: 'khandkartokytahmid@gmail.com', // Destination email
+            subject: `New Contact Form Submission from ${contact.name}`,
+            text: `
+You have received a new message from your portfolio website:
+
+Name: ${contact.name}
+Email: ${contact.email}
+Phone: ${contact.phone || 'N/A'}
+
+Message:
+${contact.message}
+            `,
+          });
+          console.log('Email notification sent successfully');
+        } catch (emailError) {
+          console.error('Failed to send email notification:', emailError);
+        }
+      } else {
+        console.warn('EMAIL_USER or EMAIL_PASS not set. Skipping email notification.');
+      }
+
       res.status(201).json({ message: 'Message sent successfully!' });
     } catch (error) {
       res.status(400).json({ error: 'Failed to send message' });
