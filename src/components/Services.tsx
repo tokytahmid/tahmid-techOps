@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Smartphone, Monitor, Layout, PenTool, Figma, Code, X, CheckCircle2 } from 'lucide-react';
+import { Smartphone, Monitor, Layout, PenTool, Figma, Code, X, CheckCircle2, Network, Server, Headset, ShieldCheck } from 'lucide-react';
 
 const iconMap: Record<string, any> = {
-  Smartphone, Monitor, Layout, PenTool, Figma, Code
+  Smartphone, Monitor, Layout, PenTool, Figma, Code, Network, Server, Headset, ShieldCheck
+};
+
+const titleIconMap: Record<string, any> = {
+  'Network Management': Network,
+  'System Administration': Server,
+  'IT Support': Headset,
+  'Cybersecurity': ShieldCheck
 };
 
 interface ServiceItem {
@@ -47,7 +54,7 @@ export default function Services() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {services.map((service) => {
-            const IconComponent = iconMap[service.icon] || Layout;
+            const IconComponent = titleIconMap[service.title] || iconMap[service.icon] || Layout;
             return (
               <div 
                 key={service._id} 
@@ -101,7 +108,7 @@ export default function Services() {
               <div className="absolute bottom-0 left-0 p-6 sm:p-8 w-full flex items-end gap-4">
                 <div className="w-16 h-16 rounded-xl bg-accent-orange flex items-center justify-center text-white shrink-0 shadow-lg">
                   {(() => {
-                    const ModalIcon = iconMap[selectedService.icon] || Layout;
+                    const ModalIcon = titleIconMap[selectedService.title] || iconMap[selectedService.icon] || Layout;
                     return <ModalIcon size={32} />;
                   })()}
                 </div>

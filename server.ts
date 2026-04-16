@@ -116,7 +116,7 @@ async function seedDatabase() {
       { 
         title: 'Network Management', 
         description: 'Designing, implementing, and maintaining robust network infrastructures.', 
-        icon: 'Monitor',
+        icon: 'Network',
         detailedDescription: 'End-to-end network management services ensuring your business stays connected. From initial architecture design to continuous monitoring and optimization, I provide scalable networking solutions that guarantee high availability and minimal latency.',
         features: ['LAN/WAN Architecture Design', 'Network Performance Monitoring', 'Bandwidth Optimization', 'Hardware Provisioning & Setup'],
         techPic: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
@@ -124,7 +124,7 @@ async function seedDatabase() {
       { 
         title: 'System Administration', 
         description: 'Managing servers, operating systems, and enterprise software solutions.', 
-        icon: 'Layout',
+        icon: 'Server',
         detailedDescription: 'Comprehensive system administration to keep your servers and enterprise applications running smoothly. I handle OS deployments, patch management, user access controls, and system health monitoring to ensure optimal performance.',
         features: ['Linux & Windows Server Management', 'Active Directory & LDAP Setup', 'Automated Patch Management', 'System Health & Resource Monitoring'],
         techPic: 'https://images.unsplash.com/photo-1629654297299-c8506221ca97?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
@@ -132,7 +132,7 @@ async function seedDatabase() {
       { 
         title: 'IT Support', 
         description: 'Providing comprehensive technical support and troubleshooting for hardware and software.', 
-        icon: 'Smartphone',
+        icon: 'Headset',
         detailedDescription: 'Reliable IT support services to resolve technical issues quickly and efficiently. Whether it is hardware troubleshooting, software configuration, or user assistance, I ensure your team experiences minimal downtime.',
         features: ['L1/L2/L3 Technical Support', 'Hardware Diagnostics & Repair', 'Software Installation & Configuration', 'Remote Desktop Assistance'],
         techPic: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
@@ -140,7 +140,7 @@ async function seedDatabase() {
       { 
         title: 'Cybersecurity', 
         description: 'Implementing security protocols, firewalls, and conducting system audits.', 
-        icon: 'Code',
+        icon: 'ShieldCheck',
         detailedDescription: 'Proactive cybersecurity measures to protect your critical data and infrastructure from evolving threats. I specialize in vulnerability assessments, firewall configurations, and implementing robust security policies.',
         features: ['Firewall & IDS/IPS Configuration', 'Vulnerability Assessments', 'Data Encryption & Access Control', 'Security Awareness Training'],
         techPic: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
@@ -156,12 +156,31 @@ async function startServer() {
   app.use(cors());
   app.use(express.json());
 
-  // Initialize MongoDB Memory Server
-  const mongoServer = await MongoMemoryServer.create();
-  const mongoUri = mongoServer.getUri();
-  
-  await mongoose.connect(mongoUri);
-  console.log('Connected to In-Memory MongoDB');
+  // Initialize MongoDB Connection
+  let mongoUri = process.env.MONGODB_URI;
+
+  if (mongoUri) {
+    if (!mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://')) {
+      console.error('Invalid MONGODB_URI: Must start with "mongodb://" or "mongodb+srv://"');
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error('Invalid MONGODB_URI connection string.');
+      } else {
+        console.warn('Falling back to In-Memory MongoDB for development.');
+        mongoUri = ''; // Clear it to trigger fallback
+      }
+    }
+  }
+
+  if (mongoUri) {
+    await mongoose.connect(mongoUri);
+    console.log('Connected to External MongoDB');
+  } else {
+    // Fallback to In-Memory Server (Local Dev Only)
+    const mongoServer = await MongoMemoryServer.create();
+    const inMemoryUri = mongoServer.getUri();
+    await mongoose.connect(inMemoryUri);
+    console.log('Connected to In-Memory MongoDB (Local Dev)');
+  }
   
   await seedDatabase();
   console.log('Database seeded');
