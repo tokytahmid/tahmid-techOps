@@ -26,11 +26,15 @@ interface ServiceItem {
 export default function Services() {
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [selectedService, setSelectedService] = useState<ServiceItem | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     axios.get('/api/services')
       .then(res => setServices(res.data))
-      .catch(err => console.error('Error fetching services:', err));
+      .catch(err => {
+        console.error('Error fetching services:', err);
+        setError('Unable to load services at this time. Please try again later.');
+      });
   }, []);
 
   // Prevent scrolling when modal is open
@@ -52,15 +56,20 @@ export default function Services() {
           <h2 className="text-[1.8rem] font-bold text-text-main">Services</h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {services.map((service) => {
-            const IconComponent = titleIconMap[service.title] || iconMap[service.icon] || Layout;
-            return (
-              <div 
-                key={service._id} 
-                className="bg-surface p-4 rounded-lg border-l-[3px] border-accent-orange border-y border-r border-y-border border-r-border hover:bg-[#222] transition-colors cursor-pointer group relative overflow-hidden"
-                onClick={() => setSelectedService(service)}
-              >
+        {error ? (
+          <div className="text-center py-10 bg-surface rounded-xl border border-border">
+            <p className="text-text-muted">{error}</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {services.map((service) => {
+              const IconComponent = titleIconMap[service.title] || iconMap[service.icon] || Layout;
+              return (
+                <div 
+                  key={service._id} 
+                  className="bg-surface p-4 rounded-lg border-l-[3px] border-accent-orange border-y border-r border-y-border border-r-border hover:bg-[#222] transition-colors cursor-pointer group relative overflow-hidden"
+                  onClick={() => setSelectedService(service)}
+                >
                 <div className="flex items-center gap-3 mb-2 relative z-10">
                   <IconComponent size={20} className="text-accent-orange group-hover:scale-110 transition-transform" />
                   <h3 className="text-[0.9rem] font-bold text-text-main group-hover:text-accent-orange transition-colors">{service.title}</h3>
@@ -78,6 +87,7 @@ export default function Services() {
             );
           })}
         </div>
+        )}
       </div>
 
       {/* Service Details Modal */}

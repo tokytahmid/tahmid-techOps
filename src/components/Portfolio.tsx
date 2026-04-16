@@ -19,6 +19,7 @@ export default function Portfolio() {
   const [activeTab, setActiveTab] = useState('All');
   const [categories, setCategories] = useState<string[]>(['All']);
   const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     axios.get('/api/projects')
@@ -27,7 +28,10 @@ export default function Portfolio() {
         const uniqueCategories = Array.from(new Set(res.data.map((p: ProjectItem) => p.category))) as string[];
         setCategories(['All', ...uniqueCategories]);
       })
-      .catch(err => console.error('Error fetching projects:', err));
+      .catch(err => {
+        console.error('Error fetching projects:', err);
+        setError('Unable to load projects at this time. Please try again later.');
+      });
   }, []);
 
   // Prevent scrolling when modal is open
@@ -72,13 +76,18 @@ export default function Portfolio() {
         </div>
 
         {/* Portfolio Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredProjects.map((project, index) => (
-            <div 
-              key={project._id} 
-              className="bg-surface rounded-xl overflow-hidden relative border border-border group cursor-pointer"
-              onClick={() => setSelectedProject(project)}
-            >
+        {error ? (
+          <div className="text-center py-10 bg-surface rounded-xl border border-border">
+            <p className="text-text-muted">{error}</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredProjects.map((project, index) => (
+              <div 
+                key={project._id} 
+                className="bg-surface rounded-xl overflow-hidden relative border border-border group cursor-pointer"
+                onClick={() => setSelectedProject(project)}
+              >
               <div className="h-48 bg-gradient-to-tr from-[#222] to-[#333] flex items-center justify-center text-border text-5xl font-bold relative overflow-hidden">
                 <img 
                   src={project.imageUrl} 
@@ -102,6 +111,7 @@ export default function Portfolio() {
             </div>
           ))}
         </div>
+        )}
       </div>
 
       {/* Project Details Modal */}
