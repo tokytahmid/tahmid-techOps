@@ -24,9 +24,13 @@ export default function Portfolio() {
   useEffect(() => {
     axios.get('/api/projects')
       .then(res => {
-        setProjects(res.data);
-        const uniqueCategories = Array.from(new Set(res.data.map((p: ProjectItem) => p.category))) as string[];
-        setCategories(['All', ...uniqueCategories]);
+        if (Array.isArray(res.data)) {
+          setProjects(res.data);
+          const uniqueCategories = Array.from(new Set(res.data.map((p: ProjectItem) => p.category))) as string[];
+          setCategories(['All', ...uniqueCategories]);
+        } else {
+          throw new Error('Invalid data format received from API');
+        }
       })
       .catch(err => {
         console.error('Error fetching projects:', err);

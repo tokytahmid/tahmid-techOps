@@ -150,72 +150,86 @@ async function seedDatabase() {
   }
 }
 
-async function startServer() {
-  const app = express();
-  const PORT = 3000;
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-  app.use(cors());
-  app.use(express.json());
+app.use(cors());
+app.use(express.json());
 
-  // Initialize MongoDB Connection
-  let mongoUri = process.env.MONGODB_URI;
-  let dbConnected = false;
+// Initialize MongoDB Connection Lazily for Serverless
+let dbConnected = false;
+let mongoServer: MongoMemoryServer | null = null;
+let connectionPromise: Promise<void> | null = null;
 
-  try {
-    if (process.env.NODE_ENV === 'production') {
-      if (!mongoUri) {
-        console.error('MONGODB_URI environment variable is missing. Please configure it in your hosting provider (e.g., Vercel).');
-      } else if (!mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://')) {
-        console.error('Invalid MONGODB_URI: Must start with "mongodb://" or "mongodb+srv://"');
+async function connectDB() {
+  if (dbConnected || mongoose.connection.readyState === 1) {
+    dbConnected = true;
+    return;
+  }
+  
+  if (connectionPromise) {
+    await connectionPromise;
+    return;
+  }
+
+  connectionPromise = (async () => {
+    let mongoUri = process.env.MONGODB_URI;
+    
+    try {
+      if (process.env.NODE_ENV === 'production') {
+        if (!mongoUri) {
+          console.error('MONGODB_URI environment variable is missing.');
+        } else if (!mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://')) {
+          console.error('Invalid MONGODB_URI: Must start with "mongodb://" or "mongodb+srv://"');
+        } else {
+          await mongoose.connect(mongoUri);
+          console.log('Connected to External MongoDB');
+          dbConnected = true;
+        }
       } else {
-        await mongoose.connect(mongoUri);
-        console.log('Connected to External MongoDB');
-        dbConnected = true;
-      }
-    } else {
-      // Local Development
-      if (mongoUri) {
-        if (!mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://')) {
+        // Local Development
+        if (mongoUri && !mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://')) {
           console.warn('Invalid MONGODB_URI. Falling back to In-Memory MongoDB.');
           mongoUri = '';
         }
+        
+        if (mongoUri) {
+          await mongoose.connect(mongoUri);
+          console.log('Connected to External MongoDB');
+          dbConnected = true;
+        } else {
+          mongoServer = await MongoMemoryServer.create();
+          const inMemoryUri = mongoServer.getUri();
+          await mongoose.connect(inMemoryUri);
+          console.log('Connected to In-Memory MongoDB (Local Dev)');
+          dbConnected = true;
+        }
       }
-      
-      if (mongoUri) {
-        await mongoose.connect(mongoUri);
-        console.log('Connected to External MongoDB');
-        dbConnected = true;
-      } else {
-        const mongoServer = await MongoMemoryServer.create();
-        const inMemoryUri = mongoServer.getUri();
-        await mongoose.connect(inMemoryUri);
-        console.log('Connected to In-Memory MongoDB (Local Dev)');
-        dbConnected = true;
-      }
-    }
 
-    if (dbConnected) {
-      await seedDatabase();
-      console.log('Database seeded');
+      if (dbConnected) {
+        await seedDatabase();
+        console.log('Database seeded');
+      }
+    } catch (error) {
+      console.error('Database connection failed:', error);
+      connectionPromise = null; // Reset promise so we can try again
     }
-  } catch (error) {
-    console.error('Database connection failed:', error);
-    // We don't throw the error here so the Express server can still start
-    // and serve the frontend static files.
+  })();
+
+  await connectionPromise;
+}
+
+// Middleware to ensure DB is connected before handling API requests
+app.use('/api', async (req, res, next) => {
+  await connectDB();
+  if (!dbConnected) {
+    return res.status(503).json({ 
+      error: 'Database not connected', 
+      message: 'The database is currently unavailable. Please check your MONGODB_URI environment variable.' 
+    });
   }
-
-  // --- API Routes ---
-  
-  // Middleware to check DB connection for API routes
-  app.use('/api', (req, res, next) => {
-    if (!dbConnected) {
-      return res.status(503).json({ 
-        error: 'Database not connected', 
-        message: 'The database is currently unavailable. If you are the site owner, please check your MONGODB_URI environment variable.' 
-      });
-    }
-    next();
-  });
+  next();
+});
   
   // Configure Nodemailer transporter
   const transporter = nodemailer.createTransport({
@@ -291,12 +305,14 @@ ${contact.message}
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
+    createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
+    }).then(vite => {
+      app.use(vite.middlewares);
     });
-    app.use(vite.middlewares);
-  } else {
+  } else if (!process.env.VERCEL) {
+    // Only serve static files if NOT on Vercel (Vercel handles static files itself)
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
@@ -304,9 +320,12 @@ ${contact.message}
     });
   }
 
+// Only start the server if we are NOT in a serverless environment like Vercel
+if (!process.env.VERCEL) {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }
 
-startServer().catch(console.error);
+// Export the app for Vercel serverless functions
+export default app;

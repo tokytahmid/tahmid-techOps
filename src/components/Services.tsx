@@ -30,7 +30,13 @@ export default function Services() {
 
   useEffect(() => {
     axios.get('/api/services')
-      .then(res => setServices(res.data))
+      .then(res => {
+        if (Array.isArray(res.data)) {
+          setServices(res.data);
+        } else {
+          throw new Error('Invalid data format received from API');
+        }
+      })
       .catch(err => {
         console.error('Error fetching services:', err);
         setError('Unable to load services at this time. Please try again later.');
