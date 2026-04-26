@@ -1,0 +1,62 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Project",
+      "description": "Portfolio project item",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "link": { "type": "string" },
+        "description": { "type": "string" },
+        "features": { "type": "array", "items": { "type": "string" } },
+        "techPic": { "type": "string" }
+      },
+      "required": ["title", "category", "imageUrl"]
+    },
+    "Skill": {
+      "title": "Skill",
+      "description": "Technical skill",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "percentage": { "type": "number" }
+      },
+      "required": ["name", "percentage"]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "Offered service",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "icon": { "type": "string" },
+        "detailedDescription": { "type": "string" },
+        "features": { "type": "array", "items": { "type": "string" } },
+        "techPic": { "type": "string" }
+      },
+      "required": ["title", "description", "icon"]
+    },
+    "Contact": {
+      "title": "Contact",
+      "description": "Contact form submission",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "message"]
+    }
+  },
+  "firestore": {
+    "projects": { "schema": "Project", "description": "Collection of portfolio projects" },
+    "skills": { "schema": "Skill", "description": "Collection of technical skills" },
+    "services": { "schema": "Service", "description": "Collection of services" },
+    "contacts": { "schema": "Contact", "description": "Collection of contact form messages" }
+  }
+}

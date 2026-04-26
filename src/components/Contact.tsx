@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { firebaseService } from '../services/firebaseService';
 import axios from 'axios';
 
 export default function Contact() {
@@ -72,11 +73,21 @@ export default function Contact() {
     setStatus({ type: null, message: '' });
 
     try {
-      await axios.post('/api/contact', formData);
+      // Save to Firebase
+      await firebaseService.submitContact(formData);
+      
+      // Also trigger email notification via API (optional)
+      try {
+        await axios.post('/api/contact', formData);
+      } catch (emailErr) {
+        console.warn('Email notification failed, but data saved to Firestore', emailErr);
+      }
+
       setStatus({ type: 'success', message: 'Message sent successfully!' });
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
       setErrors({ name: '', email: '', phone: '', subject: '', message: '' });
     } catch (error) {
+      console.error('Contact submission error:', error);
       setStatus({ type: 'error', message: 'Failed to send message. Please try again.' });
     } finally {
       setIsSubmitting(false);

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { firebaseService } from '../services/firebaseService';
 import { twMerge } from 'tailwind-merge';
 import { ExternalLink, X, CheckCircle2 } from 'lucide-react';
 
 interface ProjectItem {
-  _id: string;
+  id: string;
   title: string;
   category: string;
   imageUrl: string;
@@ -22,14 +22,13 @@ export default function Portfolio() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    axios.get('/api/projects')
-      .then(res => {
-        if (Array.isArray(res.data)) {
-          setProjects(res.data);
-          const uniqueCategories = Array.from(new Set(res.data.map((p: ProjectItem) => p.category))) as string[];
+    firebaseService.getProjects()
+      .then(data => {
+        if (data) {
+          const projectData = data as ProjectItem[];
+          setProjects(projectData);
+          const uniqueCategories = Array.from(new Set(projectData.map((p) => p.category))) as string[];
           setCategories(['All', ...uniqueCategories]);
-        } else {
-          throw new Error('Invalid data format received from API');
         }
       })
       .catch(err => {
@@ -88,7 +87,7 @@ export default function Portfolio() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredProjects.map((project, index) => (
               <div 
-                key={project._id} 
+                key={project.id} 
                 className="bg-surface rounded-xl overflow-hidden relative border border-border group cursor-pointer"
                 onClick={() => setSelectedProject(project)}
               >

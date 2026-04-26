@@ -1,14 +1,14 @@
-import { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState, useRef } from 'react';
+import { firebaseService } from '../services/firebaseService';
 import { motion, useInView, useMotionValue, useTransform, animate } from 'motion/react';
 
 interface SkillItem {
-  _id: string;
+  id: string;
   name: string;
   percentage: number;
 }
 
-function SkillCircle({ skill }: { skill: SkillItem }) {
+const SkillCircle = ({ skill }: { skill: SkillItem }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
   const count = useMotionValue(0);
@@ -62,8 +62,10 @@ export default function About() {
   const [skills, setSkills] = useState<SkillItem[]>([]);
 
   useEffect(() => {
-    axios.get('/api/skills')
-      .then(res => setSkills(res.data))
+    firebaseService.getSkills()
+      .then(data => {
+        if (data) setSkills(data as SkillItem[]);
+      })
       .catch(err => console.error('Error fetching skills:', err));
   }, []);
 
@@ -82,7 +84,7 @@ export default function About() {
                 src="/profile.jpg" 
                 alt="About Me" 
                 onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}
-                className="absolute inset-0 w-full h-full object-cover rounded-xl mix-blend-luminosity opacity-80"
+                className="absolute inset-0 w-full h-full object-cover rounded-xl shadow-lg"
                 referrerPolicy="no-referrer"
               />
             </div>
@@ -99,7 +101,9 @@ export default function About() {
               <h3 className="text-[0.8rem] uppercase text-text-muted mb-[15px] tracking-[2px]">Expertise</h3>
               <div className="flex flex-wrap gap-[15px]">
                 {skills.map((skill) => (
-                  <SkillCircle key={skill._id} skill={skill} />
+                  <div key={skill.id}>
+                    <SkillCircle skill={skill} />
+                  </div>
                 ))}
               </div>
             </div>

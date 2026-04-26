@@ -57,7 +57,7 @@ export default function Hero() {
                 src="/profile.jpg" 
                 alt="Khandkar Toky Tahmid" 
                 onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}
-                className="absolute inset-0 w-full h-full object-cover rounded-full mix-blend-luminosity opacity-80"
+                className="absolute inset-0 w-full h-full object-cover rounded-full shadow-xl"
                 referrerPolicy="no-referrer"
               />
             </div>

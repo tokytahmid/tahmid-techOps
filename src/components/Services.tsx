@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { firebaseService } from '../services/firebaseService';
+
 import { Smartphone, Monitor, Layout, PenTool, Figma, Code, X, CheckCircle2, Network, Server, Headset, ShieldCheck } from 'lucide-react';
 
 const iconMap: Record<string, any> = {
@@ -12,9 +13,8 @@ const titleIconMap: Record<string, any> = {
   'IT Support': Headset,
   'Cybersecurity': ShieldCheck
 };
-
 interface ServiceItem {
-  _id: string;
+  id: string;
   title: string;
   description: string;
   icon: string;
@@ -29,12 +29,10 @@ export default function Services() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    axios.get('/api/services')
-      .then(res => {
-        if (Array.isArray(res.data)) {
-          setServices(res.data);
-        } else {
-          throw new Error('Invalid data format received from API');
+    firebaseService.getServices()
+      .then(data => {
+        if (data) {
+          setServices(data as ServiceItem[]);
         }
       })
       .catch(err => {
@@ -72,7 +70,7 @@ export default function Services() {
               const IconComponent = titleIconMap[service.title] || iconMap[service.icon] || Layout;
               return (
                 <div 
-                  key={service._id} 
+                  key={service.id} 
                   className="bg-surface p-4 rounded-lg border-l-[3px] border-accent-orange border-y border-r border-y-border border-r-border hover:bg-[#222] transition-colors cursor-pointer group relative overflow-hidden"
                   onClick={() => setSelectedService(service)}
                 >

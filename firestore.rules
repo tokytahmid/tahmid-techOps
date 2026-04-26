@@ -1,0 +1,87 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { 
+      return isSignedIn() && (
+        request.auth.token.email == 'tahmidtoky402@gmail.com' &&
+        request.auth.token.email_verified == true
+      );
+    }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // --- Validation Helpers ---
+    function isValidProject(data) {
+      return data.keys().hasAll(['title', 'category', 'imageUrl']) &&
+        data.title is string && data.title.size() <= 200 &&
+        data.category is string && data.category.size() <= 100 &&
+        data.imageUrl is string && data.imageUrl.size() <= 1000 &&
+        (!('description' in data) || (data.description is string && data.description.size() <= 2000)) &&
+        (!('features' in data) || (data.features is list && data.features.size() <= 50)) &&
+        (!('techPic' in data) || (data.techPic is string && data.techPic.size() <= 1000));
+    }
+
+    function isValidSkill(data) {
+      return data.keys().hasAll(['name', 'percentage']) &&
+        data.name is string && data.name.size() <= 100 &&
+        data.percentage is number && data.percentage >= 0 && data.percentage <= 100;
+    }
+
+    function isValidService(data) {
+      return data.keys().hasAll(['title', 'description', 'icon']) &&
+        data.title is string && data.title.size() <= 200 &&
+        data.description is string && data.description.size() <= 1000 &&
+        data.icon is string && data.icon.size() <= 100 &&
+        (!('detailedDescription' in data) || (data.detailedDescription is string && data.detailedDescription.size() <= 2000)) &&
+        (!('features' in data) || (data.features is list && data.features.size() <= 50));
+    }
+
+    function isValidContact(data) {
+      return data.keys().hasAll(['name', 'email', 'message']) &&
+        data.name is string && data.name.size() <= 100 &&
+        data.email is string && data.email.size() <= 200 &&
+        data.message is string && data.message.size() <= 5000 &&
+        (!('phone' in data) || (data.phone is string && data.phone.size() <= 30));
+    }
+
+    // --- Collection Matches ---
+
+    match /projects/{projectId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if isAdmin() && isValidProject(incoming());
+      allow update: if isAdmin() && isValidProject(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /skills/{skillId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if isAdmin() && isValidSkill(incoming());
+      allow update: if isAdmin() && isValidSkill(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /services/{serviceId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if isAdmin() && isValidService(incoming());
+      allow update: if isAdmin() && isValidService(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /contacts/{contactId} {
+      allow create: if isValidContact(incoming()) && 
+                    (!('createdAt' in incoming()) || incoming().createdAt == request.time);
+      allow get, list, update, delete: if isAdmin();
+    }
+  }
+}
