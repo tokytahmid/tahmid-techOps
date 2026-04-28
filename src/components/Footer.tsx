@@ -1,10 +1,11 @@
 import { Linkedin, Github } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
     <footer className="bg-bg-dark py-12 border-t border-border px-10">
       <div className="max-w-7xl mx-auto text-center">
-        <a href="/" className="inline-block mb-8">
+        <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="inline-block mb-8">
           <img 
             src="/logo.png" 
             alt="KT Logo" 
@@ -17,14 +18,15 @@ export default function Footer() {
             }}
             className="h-12 w-auto object-contain mx-auto" 
           />
-        </a>
+        </Link>
         
         <nav className="flex flex-wrap justify-center gap-6 md:gap-8 mb-8">
-          <a href="#home" className="text-text-muted hover:text-accent-orange transition-colors text-sm font-medium">Home</a>
-          <a href="#services" className="text-text-muted hover:text-accent-orange transition-colors text-sm font-medium">Services</a>
-          <a href="#about" className="text-text-muted hover:text-accent-orange transition-colors text-sm font-medium">About me</a>
-          <a href="#portfolio" className="text-text-muted hover:text-accent-orange transition-colors text-sm font-medium">Portfolio</a>
-          <a href="#contact" className="text-text-muted hover:text-accent-orange transition-colors text-sm font-medium">Contact me</a>
+          <Link to="/#home" className="text-text-muted hover:text-accent-orange transition-colors text-sm font-medium">Home</Link>
+          <Link to="/#services" className="text-text-muted hover:text-accent-orange transition-colors text-sm font-medium">Services</Link>
+          <Link to="/#about" className="text-text-muted hover:text-accent-orange transition-colors text-sm font-medium">About me</Link>
+          <Link to="/#portfolio" className="text-text-muted hover:text-accent-orange transition-colors text-sm font-medium">Portfolio</Link>
+          <Link to="/blog" className="text-text-muted hover:text-accent-orange transition-colors text-sm font-medium">Blog</Link>
+          <Link to="/#contact" className="text-text-muted hover:text-accent-orange transition-colors text-sm font-medium">Contact me</Link>
         </nav>
 
         <div className="flex items-center justify-center gap-4 mb-8">

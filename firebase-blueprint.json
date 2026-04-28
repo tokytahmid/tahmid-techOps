@@ -51,12 +51,26 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "email", "message"]
+    },
+    "BlogPost": {
+      "title": "Blog Post",
+      "description": "A blog post entry",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "content": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "excerpt", "content", "createdAt"]
     }
   },
   "firestore": {
     "projects": { "schema": "Project", "description": "Collection of portfolio projects" },
     "skills": { "schema": "Skill", "description": "Collection of technical skills" },
     "services": { "schema": "Service", "description": "Collection of services" },
-    "contacts": { "schema": "Contact", "description": "Collection of contact form messages" }
+    "contacts": { "schema": "Contact", "description": "Collection of contact form messages" },
+    "blogPosts": { "schema": "BlogPost", "description": "Collection of blog posts" }
   }
 }

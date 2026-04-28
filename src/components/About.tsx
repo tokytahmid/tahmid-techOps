@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { firebaseService } from '../services/firebaseService';
-import { motion, useInView, useMotionValue, useTransform, animate } from 'motion/react';
+import { motion, useInView, useMotionValue, useTransform, animate, useMotionValueEvent } from 'motion/react';
 
 interface SkillItem {
   id: string;
@@ -17,43 +17,41 @@ const SkillCircle = ({ skill }: { skill: SkillItem }) => {
 
   useEffect(() => {
     if (isInView) {
-      const controls = animate(count, skill.percentage, { duration: 1.5, ease: "easeOut" });
+      const controls = animate(count, skill.percentage, { duration: 2, ease: "easeOut" });
       return () => controls.stop();
     }
   }, [isInView, skill.percentage, count]);
 
-  useEffect(() => {
-    const unsubscribe = rounded.on("change", (latest) => {
-      setDisplayValue(latest);
-    });
-    return unsubscribe;
-  }, [rounded]);
+  useMotionValueEvent(rounded, "change", (latest) => {
+    setDisplayValue(latest);
+  });
 
-  const radius = 22;
+  const radius = 24;
   const circumference = 2 * Math.PI * radius;
 
   return (
-    <div className="flex flex-col items-center gap-2" ref={ref}>
-      <div className="relative w-[50px] h-[50px] flex items-center justify-center">
-        <svg width="50" height="50" viewBox="0 0 50 50" className="absolute inset-0 transform -rotate-90">
-          <circle cx="25" cy="25" r={radius} stroke="var(--color-border)" strokeWidth="3" fill="none" />
+    <div className="flex flex-col items-center gap-3" ref={ref}>
+      <div className="relative w-[60px] h-[60px] flex items-center justify-center">
+        <svg width="60" height="60" viewBox="0 0 60 60" className="absolute inset-0 transform -rotate-90">
+          <circle cx="30" cy="30" r={radius} stroke="var(--color-border)" strokeWidth="4" fill="none" className="opacity-30" />
           <motion.circle 
-            cx="25" cy="25" r={radius} 
+            cx="30" cy="30" r={radius} 
             stroke="var(--color-accent-orange)" 
-            strokeWidth="3" 
+            strokeWidth="4" 
             fill="none" 
             strokeDasharray={circumference}
             initial={{ strokeDashoffset: circumference }}
             animate={isInView ? { strokeDashoffset: circumference - (skill.percentage / 100) * circumference } : { strokeDashoffset: circumference }}
-            transition={{ duration: 1.5, ease: "easeOut" }}
+            transition={{ duration: 2, ease: "easeOut" }}
             strokeLinecap="round"
+            className="drop-shadow-[0_0_4px_rgba(200,122,85,0.4)]"
           />
         </svg>
-        <span className="text-[0.7rem] font-bold text-text-main relative z-10">
+        <span className="text-[0.75rem] font-bold text-text-main relative z-10 font-mono tracking-tighter">
           {displayValue}%
         </span>
       </div>
-      <span className="text-[10px] text-text-muted uppercase text-center">{skill.name}</span>
+      <span className="text-[11px] text-text-muted font-medium uppercase tracking-wider text-center">{skill.name}</span>
     </div>
   );
 }
@@ -92,18 +90,24 @@ export default function About() {
           
           <div className="flex-1">
             <p className="text-text-muted leading-[1.6] mb-8 text-base">
-              An IT Officer is a technology professional responsible for managing and maintaining an organization's IT infrastructure. They ensure that networks, servers, and computer systems run smoothly, securely, and efficiently to support business operations.
+              I am a versatile technology professional with a dual passion for building robust IT infrastructures and developing modern full-stack web applications. My background as an IT Officer has given me a deep understanding of network management, system administration, and cybersecurity, which I now integrate with my web development expertise.
               <br/><br/>
-              With a strong background in system administration, network troubleshooting, and technical support, I specialize in optimizing IT operations, implementing robust security protocols, and providing efficient solutions to complex technical challenges. My goal is to ensure seamless technological workflows for teams and organizations.
+              I specialize in creating end-to-end digital solutions—from optimizing server architectures to crafting intuitive, data-driven web applications using React, Node.js, and modern cloud technologies. My goal is to bridge the gap between infrastructure and software, delivering seamless and secure technological workflows for modern organizations.
             </p>
             
             <div className="skill-section">
               <h3 className="text-[0.8rem] uppercase text-text-muted mb-[15px] tracking-[2px]">Expertise</h3>
               <div className="flex flex-wrap gap-[15px]">
-                {skills.map((skill) => (
-                  <div key={skill.id}>
+                {skills.map((skill, index) => (
+                  <motion.div 
+                    key={skill.id}
+                    initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
+                  >
                     <SkillCircle skill={skill} />
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>

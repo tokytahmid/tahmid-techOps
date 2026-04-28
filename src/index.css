@@ -11,6 +11,11 @@
   --color-border: #2a2a2a;
 }
 
+html {
+  scroll-behavior: smooth;
+  background-color: var(--color-bg-dark);
+}
+
 body {
   background-color: var(--color-bg-dark);
   color: var(--color-text-main);

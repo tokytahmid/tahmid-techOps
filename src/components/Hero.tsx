@@ -9,11 +9,12 @@ export default function Hero() {
           <div className="flex-1 text-center md:text-left">
             <p className="text-text-muted text-lg mb-2">Hi I am</p>
             <h2 className="text-text-main text-3xl md:text-4xl font-medium mb-2">Khandkar Toky Tahmid</h2>
-            <h1 className="text-text-main text-[2.8rem] md:text-[3.5rem] leading-[1.1] font-bold mb-4">
-              IT <span className="text-accent-orange">Officer</span>
+            <h1 className="text-text-main text-[2.4rem] md:text-[3.2rem] leading-[1.1] font-bold mb-4">
+              IT Specialist & <br className="hidden md:block" />
+              <span className="text-accent-orange">Full Stack Developer</span>
             </h1>
             <p className="text-text-muted leading-[1.6] mb-6 text-base max-w-lg mx-auto md:mx-0">
-              Dedicated IT professional specializing in system administration, network infrastructure, and providing top-tier technical support.
+              Versatile technology professional specializing in system administration, network infrastructure, and building modern full-stack web applications.
             </p>
             
             <div className="flex items-center justify-center md:justify-start gap-4 mb-10">
@@ -29,7 +30,7 @@ export default function Hero() {
               <a href="#contact" className="w-full sm:w-auto px-8 py-4 bg-accent-orange hover:bg-[#e64300] text-white rounded-md font-bold transition-colors text-center">
                 HIRE ME NOW
               </a>
-              <a href="/Toky Tahmid CV.pdf" download="Toky_Tahmid_CV.pdf" className="w-full sm:w-auto px-8 py-4 bg-surface border border-border hover:border-accent-orange text-text-main rounded-md font-bold transition-colors text-center">
+              <a href="/Khandkar_Toky_Tahmid_CV.pdf" download="Khandkar_Toky_Tahmid_CV.pdf" className="w-full sm:w-auto px-8 py-4 bg-surface border border-border hover:border-accent-orange text-text-main rounded-md font-bold transition-colors text-center">
                 Download CV
               </a>
             </div>

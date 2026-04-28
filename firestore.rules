@@ -52,6 +52,14 @@ service cloud.firestore {
         (!('phone' in data) || (data.phone is string && data.phone.size() <= 30));
     }
 
+    function isValidBlogPost(data) {
+      return data.keys().hasAll(['title', 'excerpt', 'content', 'createdAt']) &&
+             data.title is string && data.title.size() <= 200 &&
+             data.excerpt is string && data.excerpt.size() <= 500 &&
+             data.content is string && data.content.size() <= 20000 &&
+             (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1000));
+    }
+
     // --- Collection Matches ---
 
     match /projects/{projectId} {
@@ -82,6 +90,14 @@ service cloud.firestore {
       allow create: if isValidContact(incoming()) && 
                     (!('createdAt' in incoming()) || incoming().createdAt == request.time);
       allow get, list, update, delete: if isAdmin();
+    }
+
+    match /blogPosts/{postId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if isAdmin() && isValidBlogPost(incoming()) && incoming().createdAt == request.time;
+      allow update: if isAdmin() && isValidBlogPost(incoming());
+      allow delete: if isAdmin();
     }
   }
 }

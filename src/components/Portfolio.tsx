@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { firebaseService } from '../services/firebaseService';
 import { twMerge } from 'tailwind-merge';
 import { ExternalLink, X, CheckCircle2 } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface ProjectItem {
   id: string;
@@ -88,7 +89,7 @@ export default function Portfolio() {
             {filteredProjects.map((project, index) => (
               <div 
                 key={project.id} 
-                className="bg-surface rounded-xl overflow-hidden relative border border-border group cursor-pointer"
+                className="bg-surface rounded-xl overflow-hidden relative border border-border group cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-accent-orange/10"
                 onClick={() => setSelectedProject(project)}
               >
               <div className="h-48 bg-gradient-to-tr from-[#222] to-[#333] flex items-center justify-center text-border text-5xl font-bold relative overflow-hidden">
@@ -164,10 +165,16 @@ export default function Portfolio() {
                     <h4 className="text-xl font-bold text-text-main mb-4 border-b border-border pb-2">Key Features & Topics</h4>
                     <ul className="space-y-3">
                       {selectedProject.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-3 text-text-muted">
+                        <motion.li 
+                          key={idx} 
+                          className="flex items-start gap-3 text-text-muted"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: idx * 0.1, ease: "easeOut" }}
+                        >
                           <CheckCircle2 className="text-accent-orange shrink-0 mt-0.5" size={18} />
                           <span className="leading-relaxed">{feature}</span>
-                        </li>
+                        </motion.li>
                       ))}
                     </ul>
                   </>
